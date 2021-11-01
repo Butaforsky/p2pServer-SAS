@@ -32,6 +32,10 @@ p2pserver-sas/p2p_server_app.o: ..\STM32_WPAN\App\p2p_server_app.c \
   ..\Drivers\STM32WBxx_HAL_Driver\Inc\stm32wbxx_hal_i2c.h \
   ..\Drivers\STM32WBxx_HAL_Driver\Inc\stm32wbxx_hal_i2c_ex.h \
   ..\Drivers\STM32WBxx_HAL_Driver\Inc\stm32wbxx_hal_ipcc.h \
+  ..\Drivers\STM32WBxx_HAL_Driver\Inc\stm32wbxx_hal_lptim.h \
+  ..\Drivers\STM32WBxx_HAL_Driver\Inc\stm32wbxx_hal_pcd.h \
+  ..\Drivers\STM32WBxx_HAL_Driver\Inc\stm32wbxx_ll_usb.h \
+  ..\Drivers\STM32WBxx_HAL_Driver\Inc\stm32wbxx_hal_pcd_ex.h \
   ..\Drivers\STM32WBxx_HAL_Driver\Inc\stm32wbxx_hal_pwr.h \
   ..\Drivers\STM32WBxx_HAL_Driver\Inc\stm32wbxx_ll_pwr.h \
   ..\Drivers\STM32WBxx_HAL_Driver\Inc\stm32wbxx_ll_exti.h \
@@ -110,4 +114,12 @@ p2pserver-sas/p2p_server_app.o: ..\STM32_WPAN\App\p2p_server_app.c \
   ..\Middlewares\ST\STM32_WPAN\ble\svc\Inc\template_stm.h \
   ..\Middlewares\ST\STM32_WPAN\ble\svc\Inc\svc_ctl.h \
   ..\Middlewares\ST\STM32_WPAN\ble\svc\Inc\uuid.h \
-  ..\STM32_WPAN\App\p2p_server_app.h ..\Utilities\sequencer\stm32_seq.h
+  ..\STM32_WPAN\App\p2p_server_app.h ..\Utilities\sequencer\stm32_seq.h \
+  ..\Drivers\VL53L0X\core\inc\vl53l0x_api.h \
+  ..\Drivers\VL53L0X\core\inc\vl53l0x_api_strings.h \
+  ..\Drivers\VL53L0X\core\inc\vl53l0x_def.h \
+  ..\Drivers\VL53L0X\core\inc\vl53l0x_device.h \
+  ..\Drivers\VL53L0X\platform\inc\vl53l0x_types.h \
+  ..\Drivers\VL53L0X\platform\inc\vl53l0x_platform.h \
+  ..\Drivers\VL53L0X\core\inc\vl53l0x_def.h \
+  ..\Drivers\VL53L0X\platform\inc\vl53l0x_platform_log.h

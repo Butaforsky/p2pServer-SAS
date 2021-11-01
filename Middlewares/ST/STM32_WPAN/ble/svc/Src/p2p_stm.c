@@ -288,6 +288,60 @@ tBleStatus P2PS_STM_App_Update_Char(uint16_t UUID, uint8_t *pPayload)
   }
 
   return result;
-}/* end P2PS_STM_Init() */
+}
+
+tBleStatus P2PS_STM_App_Update_Int16(uint16_t UUID, uint16_t *pPayload, uint8_t num_words)
+{
+
+  uint16_t byte_reversed[num_words];
+
+  for (uint8_t i = 0; i < num_words; i++){
+	byte_reversed[i] = (pPayload[i] & 0xFF00) >> 8 | (pPayload[i] & 0x00FF) << 8;
+  }
+
+  tBleStatus result = BLE_STATUS_INVALID_PARAMS;
+  switch(UUID)
+  {
+    case P2P_NOTIFY_CHAR_UUID:
+
+     result = aci_gatt_update_char_value(aPeerToPeerContext.PeerToPeerSvcHdle,
+                             aPeerToPeerContext.P2PNotifyServerToClientCharHdle,
+                             0, /* charValOffset */
+                             2*num_words, /* charValueLen */
+                             (uint8_t *)  byte_reversed);
+
+      break;
+
+    default:
+      break;
+  }
+
+  return result;
+}
+
+
+tBleStatus P2PS_STM_App_Update_Int8(uint16_t UUID, uint8_t *pPayload, uint8_t num_bytes)
+{
+  tBleStatus result = BLE_STATUS_INVALID_PARAMS;
+  switch(UUID)
+  {
+    case P2P_NOTIFY_CHAR_UUID:
+
+     result = aci_gatt_update_char_value(aPeerToPeerContext.PeerToPeerSvcHdle,
+                             aPeerToPeerContext.P2PNotifyServerToClientCharHdle,
+                             0, /* charValOffset */
+                             num_bytes, /* charValueLen */
+                             (uint8_t *)  pPayload);
+
+      break;
+
+    default:
+      break;
+  }
+
+  return result;
+}
+
+/* end P2PS_STM_Init() */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

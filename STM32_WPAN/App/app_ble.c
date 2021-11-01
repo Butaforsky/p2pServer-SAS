@@ -160,7 +160,9 @@ typedef struct
   uint8_t SwitchOffGPIO_timer_Id;
 }BleApplicationContext_t;
 /* USER CODE BEGIN PTD */
-
+extern ADC_HandleTypeDef hadc1;
+extern TIM_HandleTypeDef htim1;
+extern LPTIM_HandleTypeDef hlptim1;
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
@@ -171,7 +173,10 @@ typedef struct
 #define BD_ADDR_SIZE_LOCAL    6
 
 /* USER CODE BEGIN PD */
+#define PERIOD               (uint32_t) 65535
 
+/* Set the Timeout value */
+#define TIMEOUT              (uint32_t) (32768 - 1)
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -227,7 +232,7 @@ uint8_t index_con_int, mutex;
  * Advertising Data
  */
 #if (P2P_SERVER1 != 0)
-static const char local_name[] = { AD_TYPE_COMPLETE_LOCAL_NAME , 'P', '2', 'P', 'S', 'R', 'V', '1'};
+static const char local_name[] = { AD_TYPE_COMPLETE_LOCAL_NAME ,'S','A','S','_','v','1'};
 uint8_t manuf_data[14] = {
     sizeof(manuf_data)-1, AD_TYPE_MANUFACTURER_SPECIFIC_DATA,
     0x01/*SKD version */,
@@ -344,7 +349,8 @@ uint8_t manuf_data[14] = {
 #endif
 
 /* USER CODE BEGIN PV */
-
+uint8_t start_counter = 1;
+extern uint32_t ADC_buffer[2];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -628,7 +634,25 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification( void *pckt )
           handleNotification.ConnectionHandle = BleApplicationContext.BleApplicationContext_legacy.connectionHandle;
           P2PS_APP_Notification(&handleNotification);
           /* USER CODE BEGIN HCI_EVT_LE_CONN_COMPLETE */
-					HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_SET);
+					
+			//		HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_SET);  // Program Start
+					if(start_counter != 0)
+					{
+						HAL_TIM_Base_Start_IT(&htim1);
+						
+						HAL_ADC_Start_DMA(&hadc1, (uint32_t *) &ADC_buffer, 2);
+
+						start_counter--;
+					}
+					
+					if (HAL_LPTIM_TimeOut_Start_IT(&hlptim1, PERIOD, TIMEOUT) != HAL_OK)
+					{
+					Error_Handler();
+					}
+  
+					HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
+					
+					
           /* USER CODE END HCI_EVT_LE_CONN_COMPLETE */
         }
         break; /* HCI_LE_CONNECTION_COMPLETE_SUBEVT_CODE */
@@ -676,11 +700,11 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification( void *pckt )
 #if(RADIO_ACTIVITY_EVENT != 0)
         case ACI_HAL_END_OF_RADIO_ACTIVITY_VSEVT_CODE:
         /* USER CODE BEGIN RADIO_ACTIVITY_EVENT*/
-				HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_SET);
+	//			HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_SET);
 				
-				HAL_Delay(10);
+	//			HAL_Delay(10);
 				
-				HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_RESET);
+	//			HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_RESET);
         /* USER CODE END RADIO_ACTIVITY_EVENT*/
           break; /* ACI_HAL_END_OF_RADIO_ACTIVITY_VSEVT_CODE */
 #endif
@@ -852,7 +876,7 @@ static void Ble_Hci_Gap_Gatt_Init(void){
 
   if (role > 0)
   {
-    const char *name = "P2PSRV1";
+    const char *name = "SAS_v1";
     aci_gap_init(role,
 #if ((CFG_BLE_ADDRESS_TYPE == RESOLVABLE_PRIVATE_ADDR) || (CFG_BLE_ADDRESS_TYPE == NON_RESOLVABLE_PRIVATE_ADDR))
                  2,

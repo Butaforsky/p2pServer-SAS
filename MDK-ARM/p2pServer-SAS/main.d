@@ -32,6 +32,10 @@ p2pserver-sas/main.o: ..\Core\Src\main.c ..\Core\Inc\main.h \
   ..\Drivers\STM32WBxx_HAL_Driver\Inc\stm32wbxx_hal_i2c.h \
   ..\Drivers\STM32WBxx_HAL_Driver\Inc\stm32wbxx_hal_i2c_ex.h \
   ..\Drivers\STM32WBxx_HAL_Driver\Inc\stm32wbxx_hal_ipcc.h \
+  ..\Drivers\STM32WBxx_HAL_Driver\Inc\stm32wbxx_hal_lptim.h \
+  ..\Drivers\STM32WBxx_HAL_Driver\Inc\stm32wbxx_hal_pcd.h \
+  ..\Drivers\STM32WBxx_HAL_Driver\Inc\stm32wbxx_ll_usb.h \
+  ..\Drivers\STM32WBxx_HAL_Driver\Inc\stm32wbxx_hal_pcd_ex.h \
   ..\Drivers\STM32WBxx_HAL_Driver\Inc\stm32wbxx_hal_pwr.h \
   ..\Drivers\STM32WBxx_HAL_Driver\Inc\stm32wbxx_ll_pwr.h \
   ..\Drivers\STM32WBxx_HAL_Driver\Inc\stm32wbxx_ll_exti.h \
@@ -68,4 +72,6 @@ p2pserver-sas/main.o: ..\Core\Src\main.c ..\Core\Inc\main.h \
   C:\Keil_v5\ARM\ARMCLANG\Bin\..\include\stdio.h \
   C:\Keil_v5\ARM\ARMCLANG\Bin\..\include\stdlib.h \
   C:\Keil_v5\ARM\ARMCLANG\Bin\..\include\stdarg.h \
-  ..\Utilities\sequencer\stm32_seq.h
+  ..\USB_Device\App\usb_device.h \
+  ..\Middlewares\ST\STM32_USB_Device_Library\Core\Inc\usbd_def.h \
+  ..\USB_Device\Target\usbd_conf.h ..\Utilities\sequencer\stm32_seq.h

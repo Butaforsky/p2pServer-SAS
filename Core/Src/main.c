@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -47,14 +48,20 @@ I2C_HandleTypeDef hi2c1;
 
 IPCC_HandleTypeDef hipcc;
 
+LPTIM_HandleTypeDef hlptim1;
+
 RTC_HandleTypeDef hrtc;
 
 TIM_HandleTypeDef htim1;
 
 UART_HandleTypeDef huart1;
+DMA_HandleTypeDef hdma_usart1_tx;
 
 /* USER CODE BEGIN PV */
-
+volatile uint8_t DMA_flag = 0;
+volatile float battery_voltage = 0; 
+volatile float mcu_voltage = 0; 
+uint32_t ADC_buffer[2] = {0,};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -68,6 +75,7 @@ static void MX_USART1_UART_Init(void);
 static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM1_Init(void);
+static void MX_LPTIM1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -117,8 +125,10 @@ int main(void)
   MX_DMA_Init();
   MX_ADC1_Init();
   MX_TIM1_Init();
+  MX_USB_Device_Init();
+  MX_LPTIM1_Init();
   /* USER CODE BEGIN 2 */
-
+	
   /* USER CODE END 2 */
 
   /* Init code for STM32_WPAN */
@@ -197,14 +207,17 @@ void SystemClock_Config(void)
   */
   PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SMPS|RCC_PERIPHCLK_RFWAKEUP
                               |RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_USART1
-                              |RCC_PERIPHCLK_I2C1|RCC_PERIPHCLK_ADC;
+                              |RCC_PERIPHCLK_LPTIM1|RCC_PERIPHCLK_I2C1
+                              |RCC_PERIPHCLK_USB|RCC_PERIPHCLK_ADC;
   PeriphClkInitStruct.PLLSAI1.PLLN = 24;
   PeriphClkInitStruct.PLLSAI1.PLLP = RCC_PLLP_DIV2;
   PeriphClkInitStruct.PLLSAI1.PLLQ = RCC_PLLQ_DIV2;
-  PeriphClkInitStruct.PLLSAI1.PLLR = RCC_PLLR_DIV2;
-  PeriphClkInitStruct.PLLSAI1.PLLSAI1ClockOut = RCC_PLLSAI1_ADCCLK;
+  PeriphClkInitStruct.PLLSAI1.PLLR = RCC_PLLR_DIV8;
+  PeriphClkInitStruct.PLLSAI1.PLLSAI1ClockOut = RCC_PLLSAI1_USBCLK|RCC_PLLSAI1_ADCCLK;
   PeriphClkInitStruct.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
   PeriphClkInitStruct.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
+  PeriphClkInitStruct.Lptim1ClockSelection = RCC_LPTIM1CLKSOURCE_PCLK1;
+  PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_PLLSAI1;
   PeriphClkInitStruct.AdcClockSelection = RCC_ADCCLKSOURCE_PLLSAI1;
   PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
   PeriphClkInitStruct.RFWakeUpClockSelection = RCC_RFWKPCLKSOURCE_LSE;
@@ -217,6 +230,9 @@ void SystemClock_Config(void)
   /* USER CODE BEGIN Smps */
 
   /* USER CODE END Smps */
+  /** Enable MSI Auto calibration
+  */
+  HAL_RCCEx_EnableMSIPLLMode();
 }
 
 /**
@@ -356,6 +372,42 @@ static void MX_IPCC_Init(void)
 }
 
 /**
+  * @brief LPTIM1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_LPTIM1_Init(void)
+{
+
+  /* USER CODE BEGIN LPTIM1_Init 0 */
+
+  /* USER CODE END LPTIM1_Init 0 */
+
+  /* USER CODE BEGIN LPTIM1_Init 1 */
+
+  /* USER CODE END LPTIM1_Init 1 */
+  hlptim1.Instance = LPTIM1;
+  hlptim1.Init.Clock.Source = LPTIM_CLOCKSOURCE_APBCLOCK_LPOSC;
+  hlptim1.Init.Clock.Prescaler = LPTIM_PRESCALER_DIV128;
+  hlptim1.Init.Trigger.Source = LPTIM_TRIGSOURCE_0;
+  hlptim1.Init.Trigger.ActiveEdge = LPTIM_ACTIVEEDGE_RISING;
+  hlptim1.Init.Trigger.SampleTime = LPTIM_TRIGSAMPLETIME_DIRECTTRANSITION;
+  hlptim1.Init.OutputPolarity = LPTIM_OUTPUTPOLARITY_HIGH;
+  hlptim1.Init.UpdateMode = LPTIM_UPDATE_IMMEDIATE;
+  hlptim1.Init.CounterSource = LPTIM_COUNTERSOURCE_INTERNAL;
+  hlptim1.Init.Input1Source = LPTIM_INPUT1SOURCE_GPIO;
+  hlptim1.Init.Input2Source = LPTIM_INPUT2SOURCE_GPIO;
+  if (HAL_LPTIM_Init(&hlptim1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN LPTIM1_Init 2 */
+
+  /* USER CODE END LPTIM1_Init 2 */
+
+}
+
+/**
   * @brief RF Initialization Function
   * @param None
   * @retval None
@@ -432,7 +484,7 @@ static void MX_TIM1_Init(void)
   htim1.Instance = TIM1;
   htim1.Init.Prescaler = 31999;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 1000;
+  htim1.Init.Period = 2000;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
@@ -515,11 +567,15 @@ static void MX_DMA_Init(void)
   /* DMA controller clock enable */
   __HAL_RCC_DMAMUX1_CLK_ENABLE();
   __HAL_RCC_DMA1_CLK_ENABLE();
+  __HAL_RCC_DMA2_CLK_ENABLE();
 
   /* DMA interrupt init */
   /* DMA1_Channel1_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+  /* DMA2_Channel4_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Channel4_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Channel4_IRQn);
 
 }
 
@@ -559,14 +615,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PC3 PC5 PC6 PC10
-                           PC11 PC12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_10
-                          |GPIO_PIN_11|GPIO_PIN_12;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
   /*Configure GPIO pins : PA0 PA1 PA2 PA3
                            PA4 PA5 PA6 PA7
                            PA8 PA9 PA10 PA15 */
@@ -582,6 +630,14 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PC5 PC6 PC10 PC11
+                           PC12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_10|GPIO_PIN_11
+                          |GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PB2 PB10 PB11 PB12
                            PB13 PB14 PB15 PB4 */
@@ -603,14 +659,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PA11 PA12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.Alternate = GPIO_AF10_USB;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : B2_Pin B3_Pin */
   GPIO_InitStruct.Pin = B2_Pin|B3_Pin;

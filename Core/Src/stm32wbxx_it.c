@@ -57,8 +57,12 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
+extern PCD_HandleTypeDef hpcd_USB_FS;
 extern DMA_HandleTypeDef hdma_adc1;
+extern ADC_HandleTypeDef hadc1;
+extern LPTIM_HandleTypeDef hlptim1;
 extern TIM_HandleTypeDef htim1;
+extern DMA_HandleTypeDef hdma_usart1_tx;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -216,6 +220,34 @@ void DMA1_Channel1_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles ADC1 global interrupt.
+  */
+void ADC1_IRQHandler(void)
+{
+  /* USER CODE BEGIN ADC1_IRQn 0 */
+
+  /* USER CODE END ADC1_IRQn 0 */
+  HAL_ADC_IRQHandler(&hadc1);
+  /* USER CODE BEGIN ADC1_IRQn 1 */
+
+  /* USER CODE END ADC1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles USB low priority interrupt, USB wake-up interrupt through EXTI line 28.
+  */
+void USB_LP_IRQHandler(void)
+{
+  /* USER CODE BEGIN USB_LP_IRQn 0 */
+
+  /* USER CODE END USB_LP_IRQn 0 */
+  HAL_PCD_IRQHandler(&hpcd_USB_FS);
+  /* USER CODE BEGIN USB_LP_IRQn 1 */
+
+  /* USER CODE END USB_LP_IRQn 1 */
+}
+
+/**
   * @brief This function handles TIM1 update interrupt and TIM16 global interrupt.
   */
 void TIM1_UP_TIM16_IRQHandler(void)
@@ -241,6 +273,34 @@ void HSEM_IRQHandler(void)
   /* USER CODE BEGIN HSEM_IRQn 1 */
 
   /* USER CODE END HSEM_IRQn 1 */
+}
+
+/**
+  * @brief This function handles LPTIM1 global interrupt.
+  */
+void LPTIM1_IRQHandler(void)
+{
+  /* USER CODE BEGIN LPTIM1_IRQn 0 */
+
+  /* USER CODE END LPTIM1_IRQn 0 */
+  HAL_LPTIM_IRQHandler(&hlptim1);
+  /* USER CODE BEGIN LPTIM1_IRQn 1 */
+
+  /* USER CODE END LPTIM1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles DMA2 channel4 global interrupt.
+  */
+void DMA2_Channel4_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA2_Channel4_IRQn 0 */
+
+  /* USER CODE END DMA2_Channel4_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_usart1_tx);
+  /* USER CODE BEGIN DMA2_Channel4_IRQn 1 */
+
+  /* USER CODE END DMA2_Channel4_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

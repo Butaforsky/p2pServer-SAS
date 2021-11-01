@@ -63,7 +63,8 @@ typedef struct
 void P2PS_STM_Init( void );
 void P2PS_STM_App_Notification(P2PS_STM_App_Notification_evt_t *pNotification);
 tBleStatus P2PS_STM_App_Update_Char(uint16_t UUID,  uint8_t *pPayload);
-
+tBleStatus P2PS_STM_App_Update_Int16(uint16_t UUID,  uint16_t *pPayload, uint8_t num_words);
+tBleStatus P2PS_STM_App_Update_Int8(uint16_t UUID, uint8_t *pPayload, uint8_t num_bytes);
 
 #ifdef __cplusplus
 }

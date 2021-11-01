@@ -61,7 +61,7 @@ PLACE_IN_SECTION("MB_MEM2") ALIGN(4) static uint8_t SystemSpareEvtBuffer[sizeof(
 PLACE_IN_SECTION("MB_MEM2") ALIGN(4) static uint8_t BleSpareEvtBuffer[sizeof(TL_PacketHeader_t) + TL_EVT_HDR_SIZE + 255];
 
 /* USER CODE BEGIN PV */
-
+extern uint8_t DMA_flag;
 /* USER CODE END PV */
 
 /* Private functions prototypes-----------------------------------------------*/
@@ -112,7 +112,6 @@ void MX_APPE_Init( void )
   HW_TS_Init(hw_ts_InitMode_Full, &hrtc); /**< Initialize the TimerServer */
 
 /* USER CODE BEGIN APPE_Init_1 */
-
 /* USER CODE END APPE_Init_1 */
   appe_Tl_Init();	/* Initialize all transport layers */
 
@@ -441,6 +440,20 @@ void shci_cmd_resp_wait(uint32_t timeout)
 }
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	if(htim -> Instance == TIM1)
+	{
+		UTIL_SEQ_SetTask(1 << TIM1_ID, CFG_SCH_PRIO_0);
+	}
+}	
 
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+	if(hadc -> Instance == ADC1)
+	{
+		DMA_flag = 1;
+	}
+}
 /* USER CODE END FD_WRAP_FUNCTIONS */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
